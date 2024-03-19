@@ -1,28 +1,37 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { Routes, Route, Navigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { app, db } from 'firebaseApp';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+
+import Router from './components/Router';
+import Loader from 'components/Loader';
 
 function App() {
+  console.log(db);
+  const auth = getAuth(app);
+
+  const [init, setInit] = useState<boolean>(false);
+  // auth를 체크하기 전(initialize 전)에는 loader를 띄워주는 용도
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!auth?.currentUser);
+  // auth의 currentUser가 있으면 authenticated로 변경
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+      setInit(true);
+    });
+  }, [auth]);
+
   return (
     <>
-      <ul>
-        <li><Link to="/">Home</Link></li>
-        <li><Link to="/posts">Post Link</Link></li>
-        <li><Link to="/posts/:id">Post Detail</Link></li>
-        <li><Link to="/posts/new">Post New</Link></li>
-        <li><Link to="/posts/edit/:id">Post Edit</Link></li>
-        <li><Link to="/profile">Profile</Link></li>
-      </ul>
-      <Routes>
-        <Route path="/" element={<h1>Home Page</h1>} />
-        <Route path="/posts" element={<h1>Post List Page</h1>} />
-        <Route path="/posts/:id" element={<h1>Post Detail Page</h1>} />
-        <Route path="/posts/new" element={<h1>Post New Page</h1>} />
-        <Route path="/posts/edit/:id" element={<h1>Post Edit Page</h1>} />
-        <Route path="/profile" element={<h1>Profile Page</h1>} />
-        <Route path="*" element={<Navigate replace to="/" />} />
-      </Routes>
+      <ToastContainer />
+      {init ? <Router isAuthenticated={isAuthenticated} /> : <Loader />}
     </>
   )
 }
