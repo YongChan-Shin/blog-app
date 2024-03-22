@@ -30,7 +30,7 @@ function App() {
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer autoClose={1000} />
       {init ? <Router isAuthenticated={isAuthenticated} /> : <Loader />}
     </>
   )
